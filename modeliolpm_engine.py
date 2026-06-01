@@ -147,26 +147,22 @@ def assemble_modular_io_from_df(Z_df, P_df, Y_df):
     # 3. Kembalikan hasil agar bisa lanjut ke analisis Leontief
     return Z, P, Y, X
 
-def simulate_demand_shock(L, Y, shock_dict):
+def calculate_output_change(L, delta_Y_dict, n_sektor):
     """
-    Simulasi kenaikan permintaan akhir dengan pengaman dimensi.
+    Menghitung perubahan output total (Delta X) berdasarkan perubahan permintaan akhir (Delta Y)
+    Rumus: Delta X = L * Delta Y
     """
-    # 1. Pastikan Y adalah array 1 dimensi
-    Y_new = Y.copy().flatten()
+    import numpy as np
     
-    # 2. Terapkan shock
-    for idx, pct in shock_dict.items():
-        # Pastikan index valid
-        if idx < len(Y_new):
-            Y_new[idx] = Y_new[idx] * (1 + (pct / 100))
+    # 1. Inisialisasi vektor kolom Delta Y dengan nilai 0 sebanyak jumlah sektor (n_sektor x 1)
+    delta_Y = np.zeros(n_sektor)
     
-    # 3. DEBUG: Pastikan ukuran L dan Y cocok sebelum dot product
-    # L seharusnya (N, N), Y seharusnya (N,)
-    n_sektor = len(Y_new)
-    if L.shape != (n_sektor, n_sektor):
-        raise ValueError(f"Dimensi L salah! L adalah {L.shape}, padahal seharusnya ({n_sektor}, {n_sektor})")
+    # 2. Isi vektor Delta Y berdasarkan input skenario dari user
+    for idx, value in delta_Y_dict.items():
+        if idx < n_sektor:
+            delta_Y[idx] = value
+            
+    # 3. Perkalian matriks: L (n x n) dikali delta_Y (n x 1)
+    delta_X = L.dot(delta_Y).flatten()
     
-    # 4. Perkalian Vektor
-    X_new = L.dot(Y_new).flatten()
-    
-    return X_new, Y_new
+    return delta_X, delta_Y
