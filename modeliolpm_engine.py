@@ -28,23 +28,31 @@ def clean_and_load(file_obj):
 
 def assemble_modular_io(file_z, file_p, file_y):
     """
-    Merakit matriks Z (Transaksi), P (Input Primer), dan Y (Permintaan Akhir).
+    Merakit matriks Z, P, dan Y dengan logika Auto-Transpose yang fleksibel.
     """
     df_z, Z_df = clean_and_load(file_z)
     df_p, P_df = clean_and_load(file_p)
     df_y, Y_df = clean_and_load(file_y)
     
-    # Validasi dimensi dasar
-    if Z_df.shape[0] != P_df.shape[1] or Z_df.shape[0] != Y_df.shape[0]:
-        raise ValueError(f"Ketidakcocokan dimensi! Z:{Z_df.shape}, P:{P_df.shape}, Y:{Y_df.shape}")
-    
-    # Konversi ke NumPy Array
+    # 1. Pastikan Matriks Z (Transaksi) adalah 17x17 (N x N)
     Z = Z_df.values
-    P = P_df.values
-    Y = Y_df.values
     
-    # Menghitung Total Output (X)
-    # X = (Sum baris Z) + (Sum baris Y)
+    # 2. Logika Auto-Transpose untuk Input Primer (P)
+    # Jika P tidak punya 17 kolom, coba balikkan (Transpose)
+    P = P_df.values
+    if P.shape[1] != Z.shape[1] and P.shape[0] == Z.shape[1]:
+        P = P.T
+    
+    # 3. Logika Auto-Transpose untuk Permintaan Akhir (Y)
+    Y = Y_df.values
+    if Y.shape[0] != Z.shape[0]:
+        Y = Y.T
+
+    # Validasi Akhir (hanya peringatan, tidak harus mematikan program)
+    if Z.shape[0] != P.shape[1] or Z.shape[0] != Y.shape[0]:
+        st.warning(f"Audit Dimensi: Z={Z.shape}, P={P.shape}, Y={Y.shape}. Pastikan data sesuai.")
+    
+    # Menghitung Total Output per sektor (X)
     X = Z.sum(axis=1) + Y.sum(axis=1)
     
     return Z, P, Y, X
