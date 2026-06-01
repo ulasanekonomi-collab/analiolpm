@@ -1,31 +1,34 @@
 import streamlit as st
-from modeliolpm_engine import assemble_modular_io
+from modeliolpm_engine import process_pure_transaction_matrix
 
 st.set_page_config(page_title="Model IOLPM - Data Modular", layout="wide")
 st.title("📊 MODEL IOLPM: Layer Konstruksi Data")
 
 # Panel Sidebar untuk Input Modular
 st.sidebar.header("📁 Input Data Modular")
-file_z = st.sidebar.file_uploader("1. Matriks Transaksi (Z)", type=["csv"])
-file_p = st.sidebar.file_uploader("2. Input Primer (P)", type=["csv"])
-file_y = st.sidebar.file_uploader("3. Permintaan Akhir (Y)", type=["csv"])
+st.sidebar.write("Tahap 1: Validasi Matriks Transaksi Antara (Z)")
+file_z = st.sidebar.file_uploader("Unggah Matriks Transaksi (Z)", type=["csv"])
 
-if file_z and file_p and file_y:
+if file_z:
     try:
-        Z, P, Y, X, sektor = assemble_modular_io(file_z, file_p, file_y)
+        # Memanggil fungsi yang sesuai dengan engine V15
+        df_result, Z_val, sektor_names = process_pure_transaction_matrix(file_z)
         
-        st.success("✅ Data berhasil disinkronisasi!")
+        st.success("✅ Data berhasil dimuat dan diproses!")
         
         # Ringkasan Audit
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Dimensi Z", f"{Z.shape[0]}x{Z.shape[1]}")
-        col2.metric("Dimensi P", f"{P.shape[0]}x{P.shape[1]}")
-        col3.metric("Dimensi Y", f"{Y.shape[0]}x{Y.shape[1]}")
+        st.write("### Audit Struktur Data")
+        st.metric("Dimensi Matriks Z", f"{Z_val.shape[0]}x{Z_val.shape[1]}")
         
-        st.write("### Audit Struktur Data (Total Output X per Sektor)")
-        st.bar_chart(X)
+        # Menampilkan Tabel Hasil
+        st.write("### Matriks Transaksi Antara (Z)")
+        st.dataframe(df_result.style.format("{:,.2f}"))
+        
+        # Visualisasi Total Output
+        st.write("### Bar Chart Total Output per Sektor")
+        st.bar_chart(df_result['TOTAL OUTPUT'][:-1]) # Mengabaikan baris Total Input
         
     except Exception as e:
         st.error(f"Terjadi kesalahan saat merakit data: {e}")
 else:
-    st.info("Silakan unggah ketiga file CSV di atas untuk memulai.")
+    st.info("Silakan unggah berkas CSV Matriks Transaksi untuk memulai.")
