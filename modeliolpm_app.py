@@ -75,7 +75,8 @@ if file_z and file_p and file_y:
             for s in sim_sectors:
                 pct = st.sidebar.number_input(f"{s} (%):", 0.0, 200.0, 10.0, 1.0)
                 shock_dict[sektor_names.index(s)] = pct
-        
+        # Tepat sebelum st.sidebar.button("Jalankan Simulasi")
+        st.sidebar.write(f"Dimensi L saat ini: {L.shape}")
         if st.sidebar.button("Jalankan Simulasi"):
             if not shock_dict:
                 st.warning("Pilih sektor dulu!")
