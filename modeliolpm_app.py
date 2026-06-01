@@ -39,5 +39,5 @@ st.write("### Komposisi Biaya Input per Sektor (Bahan Baku vs Input Primer)")
 st.bar_chart(df_struct[["Input: Bahan Baku (%)", "Input: Input Primer (%)"]])
 
 # Visualisasi Stacked Bar Chart untuk Output
-st.write("### Distribusi Output per Sektor (Bahan Baku vs Permintaan Akhir)")
-st.bar_chart(df_struct[["Output: Bahan Baku (%)", "Output: Permintaan Akhir (%)"]])
+# st.write("### Distribusi Output per Sektor (Bahan Baku vs Permintaan Akhir)")
+# st.bar_chart(df_struct[["Output: Bahan Baku (%)", "Output: Permintaan Akhir (%)"]])
