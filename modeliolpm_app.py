@@ -84,3 +84,18 @@ if file_z and file_p and file_y:
         st.error(f"Terjadi kesalahan saat memproses data: {e}")
 else:
     st.info("Silakan unggah ketiga file CSV di sidebar untuk memulai analisis.")
+
+# --- Footer Sidebar ---
+st.sidebar.markdown("---") 
+
+# 1. Menampilkan Logo (Pastikan file unisba_logo.png ada di folder yang sama)
+st.sidebar.image("logounisba.png", width=150)
+
+# 2. Menampilkan teks dengan spasi rapat (menggunakan HTML)
+st.sidebar.markdown("""
+    <div style="line-height: 1.0;">
+        <p style="margin-bottom: 5px;">Dikembangkan oleh:</p>
+        <p style="margin-bottom: 5px;"><strong>Yuhka Sundaya</strong></p>
+        <p>Ekonomi Pembangunan Unisba</p>
+    </div>
+""", unsafe_allow_html=True)
