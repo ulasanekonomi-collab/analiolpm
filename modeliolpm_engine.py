@@ -73,3 +73,29 @@ def calculate_structural_coefficients(Z, P, Y, X, sektor_names):
     }, index=sektor_names)
     
     return df_structure
+
+def calculate_leontief_inverse(Z, X):
+    """
+    Menghitung Matriks Koefisien Teknis (A) dan Invers Leontief (L).
+    """
+    # Menghindari pembagian dengan nol
+    X_safe = np.where(X == 0, 1.0, X)
+    
+    # 1. Hitung Koefisien Teknis (A = Z / X)
+    # Z adalah [Sektor x Sektor], X adalah [Sektor]
+    A = Z / X_safe
+    
+    # 2. Matriks Identitas
+    I = np.identity(Z.shape[0])
+    
+    # 3. Hitung (I - A)
+    IA = I - A
+    
+    # 4. Hitung Invers Leontief L = (I - A)^-1
+    try:
+        L = np.linalg.inv(IA)
+    except np.linalg.LinAlgError:
+        # Jika matriks tidak bisa di-invers
+        L = np.zeros_like(I)
+        
+    return A, L
