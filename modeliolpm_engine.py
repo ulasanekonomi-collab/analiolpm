@@ -1,40 +1,50 @@
-import numpy as np
 import pandas as pd
+import numpy as np
 
-def process_pure_transaction_matrix(file_path):
+def clean_and_load(file_obj):
     """
-    Engine V15: Menggunakan positional indexing (iloc) secara murni.
-    Tidak akan pernah terjadi KeyError karena mengabaikan nama label kolom.
+    Membaca CSV, membersihkan spasi internal, dan mengonversi ke angka murni.
     """
     try:
-        # Membaca CSV dan mengabaikan header asli agar tidak ada konflik nama kolom
-        # Kita buat header baru secara manual
-        df = pd.read_csv(file_path, sep=';', header=None, skiprows=1)
+        df = pd.read_csv(file_obj, sep=';')
     except:
-        df = pd.read_csv(file_path, sep=',', header=None, skiprows=1)
+        df = pd.read_csv(file_obj, sep=',')
     
-    # 1. Ambil Nama Sektor (Sektor/Deskripsi selalu di kolom indeks 1)
-    # Gunakan iloc untuk posisi, bukan nama
-    sektor_names = df.iloc[:, 1].astype(str).str.strip().tolist()
+    # Menghapus spasi pada nama kolom
+    df.columns = df.columns.str.strip()
     
-    # 2. Ambil Matriks Transaksi (Data angka dimulai dari kolom indeks 2 sampai 18)
-    # Kita ambil 17 baris pertama
-    Z_raw = df.iloc[0:17, 2:19]
-    
-    # 3. Fungsi pembersih angka yang lebih aman
-    def clean_cell(val):
+    # Fungsi pembersih sel
+    def clean_cell(x):
+        if pd.isna(x): return 0.0
+        s = str(x).strip().replace(' ', '').replace(',', '.')
         try:
-            # Ganti spasi, koma jadi titik, lalu float
-            return float(str(val).replace(' ', '').replace(',', '.'))
+            return float(s)
         except:
             return 0.0
+            
+    # Mengambil data angka (mengasumsikan kolom 0: Kode, kolom 1: Deskripsi, kolom 2 dst: Angka)
+    df_numeric = df.iloc[:, 2:].applymap(clean_cell)
+    return df, df_numeric
 
-    Z_numeric = Z_raw.applymap(clean_cell)
-    Z_val = Z_numeric.values.astype(float)
+def assemble_modular_io(file_z, file_p, file_y):
+    """
+    Merakit matriks Z (Transaksi), P (Input Primer), dan Y (Permintaan Akhir).
+    """
+    df_z, Z_df = clean_and_load(file_z)
+    df_p, P_df = clean_and_load(file_p)
+    df_y, Y_df = clean_and_load(file_y)
     
-    # 4. Kalkulasi
-    df_result = pd.DataFrame(Z_val, index=sektor_names[0:17], columns=[str(i) for i in range(1, 18)])
-    df_result['TOTAL OUTPUT'] = Z_val.sum(axis=1)
-    df_result.loc['TOTAL INPUT'] = list(Z_val.sum(axis=0)) + [Z_val.sum()]
+    # Validasi dimensi dasar
+    if Z_df.shape[0] != P_df.shape[1] or Z_df.shape[0] != Y_df.shape[0]:
+        raise ValueError(f"Ketidakcocokan dimensi! Z:{Z_df.shape}, P:{P_df.shape}, Y:{Y_df.shape}")
     
-    return df_result, Z_val, sektor_names[0:17]
+    # Konversi ke NumPy Array
+    Z = Z_df.values
+    P = P_df.values
+    Y = Y_df.values
+    
+    # Menghitung Total Output (X)
+    # X = (Sum baris Z) + (Sum baris Y)
+    X = Z.sum(axis=1) + Y.sum(axis=1)
+    
+    return Z, P, Y, X
