@@ -14,14 +14,25 @@ def clean_and_load(file_obj):
     df.columns = df.columns.str.strip()
     
     # Fungsi pembersih sel
-    def clean_cell(x):
-        if pd.isna(x): return 0.0
-        # Menghapus spasi dan mengubah koma desimal menjadi titik
-        s = str(x).strip().replace(' ', '').replace(',', '.')
+    def clean_and_load(file_obj):
+        """
+        Versi Anti-Error: Mengubah data menjadi numerik dengan paksa.
+        """
         try:
-            return float(s)
+            df = pd.read_csv(file_obj, sep=';')
         except:
-            return 0.0
+            df = pd.read_csv(file_obj, sep=',')
+    
+        # Bersihkan nama kolom dari spasi
+        df.columns = df.columns.str.strip()
+    
+        # --- BAGIAN PERBAIKAN DI SINI ---
+        # Kita ambil kolom data (mulai kolom ke-3 / indeks 2)
+        # pd.to_numeric dengan errors='coerce' akan mengubah teks menjadi NaN
+        # fillna(0) mengubah NaN menjadi 0 agar kalkulasi aman
+        df_numeric = df.iloc[:, 2:].apply(pd.to_numeric, errors='coerce').fillna(0.0)
+    
+        return df, df_numeric
             
     # Mengambil data angka (mengasumsikan kolom 0: Kode, kolom 1: Deskripsi, sisanya angka)
     df_numeric = df.iloc[:, 2:].applymap(clean_cell)
