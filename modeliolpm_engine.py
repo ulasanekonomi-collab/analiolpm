@@ -2,16 +2,7 @@ import pandas as pd
 import numpy as np
 
 def clean_and_load(file_obj):
-    """
-    Membaca CSV, membersihkan spasi internal, dan mengonversi ke angka murni.
-    """
-    try:
-        df = pd.read_csv(file_obj, sep=';')
-    except:
-        df = pd.read_csv(file_obj, sep=',')
-    
-    # Menghapus spasi pada nama kolom
-    df.columns = df.columns.str.strip()
+    # ... (kode pembacaan CSV tetap sama) ...
     
     # Fungsi pembersih sel
     def clean_cell(x):
@@ -22,8 +13,10 @@ def clean_and_load(file_obj):
         except:
             return 0.0
             
-    # Mengambil data angka (mengasumsikan kolom 0: Kode, kolom 1: Deskripsi, kolom 2 dst: Angka)
-    df_numeric = df.iloc[:, 2:].applymap(clean_cell)
+    # PERBAIKAN DI SINI: Ganti .applymap menjadi .map
+    # Perintah .map sekarang berlaku untuk DataFrame di Pandas versi terbaru
+    df_numeric = df.iloc[:, 2:].map(clean_cell) 
+    
     return df, df_numeric
 
 def assemble_modular_io(file_z, file_p, file_y):
