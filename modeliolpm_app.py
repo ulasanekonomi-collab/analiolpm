@@ -101,29 +101,29 @@ st.sidebar.markdown("""
 """, unsafe_allow_html=True)
 
 # --- SIMULASI ---
-        st.sidebar.markdown("---")
-        st.sidebar.header("🚀 Simulasi Shock")
+st.sidebar.markdown("---")
+st.sidebar.header("🚀 Simulasi Shock")
         
-        sim_sector = st.sidebar.selectbox("Pilih Sektor Simulasi:", sektor_names)
-        sim_pct = st.sidebar.slider("Persentase Kenaikan Permintaan (%):", 0, 100, 10)
+sim_sector = st.sidebar.selectbox("Pilih Sektor Simulasi:", sektor_names)
+sim_pct = st.sidebar.slider("Persentase Kenaikan Permintaan (%):", 0, 100, 10)
         
-        if st.sidebar.button("Jalankan Simulasi"):
-            # Cari index sektor
-            idx = sektor_names.index(sim_sector)
+if st.sidebar.button("Jalankan Simulasi"):
+    # Cari index sektor
+    idx = sektor_names.index(sim_sector)
             
-            # Panggil fungsi simulasi
-            X_shock, Y_shock = simulate_demand_shock(L, Y, idx, sim_pct)
+    # Panggil fungsi simulasi
+    X_shock, Y_shock = simulate_demand_shock(L, Y, idx, sim_pct)
             
-            # Tampilkan Perbandingan
-            st.write(f"### Hasil Simulasi: Kenaikan {sim_pct}% pada {sim_sector}")
+    # Tampilkan Perbandingan
+    st.write(f"### Hasil Simulasi: Kenaikan {sim_pct}% pada {sim_sector}")
             
-            df_sim = pd.DataFrame({
-                "Output Awal": X,
-                "Output Setelah Simulasi": X_shock,
-                "Selisih": X_shock - X
-            }, index=sektor_names)
+    df_sim = pd.DataFrame({
+        "Output Awal": X,
+        "Output Setelah Simulasi": X_shock,
+        "Selisih": X_shock - X
+    }, index=sektor_names)
             
-            st.dataframe(df_sim.style.format("{:,.0f}"))
+    st.dataframe(df_sim.style.format("{:,.0f}"))
             
-            # Visualisasi Dampak
-            st.bar_chart(df_sim[["Output Awal", "Output Setelah Simulasi"]])
+    # Visualisasi Dampak
+    st.bar_chart(df_sim[["Output Awal", "Output Setelah Simulasi"]])
