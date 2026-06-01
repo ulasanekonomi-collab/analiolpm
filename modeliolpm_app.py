@@ -25,8 +25,8 @@ file_p = st.sidebar.file_uploader("2. Input Primer (P)", type=["csv"])
 file_y = st.sidebar.file_uploader("3. Permintaan Akhir (Y)", type=["csv"])
 # Tambahkan ini di bagian bawah sidebar
 st.sidebar.markdown("---")  # Garis pemisah
-st.sidebar.markdown("Dikembangkan oleh Yuhka Sundaya")
-st.sidebar.markdown("Ekonomi Pembangunan Unisba")
+st.sidebar.markdown("Model Input-Output")
+st.sidebar.markdown("Dikembangkan oleh Wassily Leontief (1941) untuk menganalisis keragaan ekonomi")
 
 if file_z and file_p and file_y:
     try:
