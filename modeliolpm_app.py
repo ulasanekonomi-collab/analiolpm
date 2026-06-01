@@ -80,15 +80,30 @@ if file_z and file_p and file_y:
             if not shock_dict:
                 st.warning("Pilih sektor dulu!")
             else:
+                # 1. Panggil simulasi
                 X_shock, Y_shock = simulate_demand_shock(L, Y, shock_dict)
-                # Pakai Series untuk menghindari ValueError
-                X_awal = pd.Series(X, index=sektor_names)
-                X_akhir = pd.Series(X_shock, index=sektor_names)
-                df_sim = pd.DataFrame({"Output Awal": X_awal, "Output Baru": X_akhir, "Selisih": X_akhir - X_awal})
                 
-                st.write("### 📉 Hasil Simulasi")
-                st.dataframe(df_sim.style.format("{:,.0f}"))
-                st.bar_chart(df_sim["Selisih"].sort_values(ascending=False).head(10))
+                # 2. DEBUGGING: Kita cek dulu bentuk datanya sebelum dimasukkan ke DataFrame
+                st.write(f"--- Debug Info ---")
+                st.write(f"Jumlah Sektor (Index): {len(sektor_names)}")
+                st.write(f"Jumlah Data Output Shock: {len(X_shock)}")
+                
+                # 3. Validasi
+                if len(X_shock) != len(sektor_names):
+                    st.error(f"❌ Error: Jumlah data ({len(X_shock)}) tidak cocok dengan jumlah sektor ({len(sektor_names)}). Cek kembali fungsi di engine!")
+                else:
+                    # Pakai Series untuk menghindari ValueError
+                    X_awal = pd.Series(X, index=sektor_names)
+                    X_akhir = pd.Series(X_shock, index=sektor_names)
+                    df_sim = pd.DataFrame({
+                        "Output Awal": X_awal, 
+                        "Output Baru": X_akhir, 
+                        "Selisih": X_akhir - X_awal
+                    })
+                    
+                    st.write("### 📉 Hasil Simulasi")
+                    st.dataframe(df_sim.style.format("{:,.0f}"))
+                    st.bar_chart(df_sim["Selisih"].sort_values(ascending=False).head(10))
 
     except Exception as e:
         st.error(f"Terjadi kesalahan: {e}")
