@@ -1,34 +1,32 @@
 import streamlit as st
-from modeliolpm_engine import process_pure_transaction_matrix
+from modeliolpm_engine import assemble_modular_io
 
 st.set_page_config(page_title="Model IOLPM - Data Modular", layout="wide")
-st.title("📊 MODEL IOLPM: Layer Konstruksi Data")
+st.title("📊 MODEL IOLPM: Layer Konstruksi Data Modular")
 
 # Panel Sidebar untuk Input Modular
-st.sidebar.header("📁 Input Data Modular")
-st.sidebar.write("Tahap 1: Validasi Matriks Transaksi Antara (Z)")
-file_z = st.sidebar.file_uploader("Unggah Matriks Transaksi (Z)", type=["csv"])
+st.sidebar.header("📁 Unggah Komponen Data")
+file_z = st.sidebar.file_uploader("1. Matriks Transaksi (Z)", type=["csv"])
+file_p = st.sidebar.file_uploader("2. Input Primer (P)", type=["csv"])
+file_y = st.sidebar.file_uploader("3. Permintaan Akhir (Y)", type=["csv"])
 
-if file_z:
+if file_z and file_p and file_y:
     try:
-        # Memanggil fungsi yang sesuai dengan engine V15
-        df_result, Z_val, sektor_names = process_pure_transaction_matrix(file_z)
+        Z, P, Y, X = assemble_modular_io(file_z, file_p, file_y)
         
-        st.success("✅ Data berhasil dimuat dan diproses!")
+        st.success("✅ **Struktur Data Berhasil Disinkronisasi!**")
         
-        # Ringkasan Audit
-        st.write("### Audit Struktur Data")
-        st.metric("Dimensi Matriks Z", f"{Z_val.shape[0]}x{Z_val.shape[1]}")
+        # Ringkasan Audit untuk memastikan tidak ada kesalahan dimensi
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Dimensi Transaksi (Z)", f"{Z.shape[0]}x{Z.shape[1]}")
+        col2.metric("Dimensi Input Primer (P)", f"{P.shape[0]}x{P.shape[1]}")
+        col3.metric("Dimensi Permintaan Akhir (Y)", f"{Y.shape[0]}x{Y.shape[1]}")
         
-        # Menampilkan Tabel Hasil
-        st.write("### Matriks Transaksi Antara (Z)")
-        st.dataframe(df_result.style.format("{:,.2f}"))
-        
-        # Visualisasi Total Output
-        st.write("### Bar Chart Total Output per Sektor")
-        st.bar_chart(df_result['TOTAL OUTPUT'][:-1]) # Mengabaikan baris Total Input
+        # Visualisasi sederhana untuk verifikasi awal
+        st.write("### Grafik Total Output per Sektor (X)")
+        st.bar_chart(X)
         
     except Exception as e:
-        st.error(f"Terjadi kesalahan saat merakit data: {e}")
+        st.error(f"🚨 **Kesalahan perakitan data:** {e}")
 else:
-    st.info("Silakan unggah berkas CSV Matriks Transaksi untuk memulai.")
+    st.info("Silakan unggah ketiga berkas CSV (Z, P, dan Y) pada panel di sebelah kiri.")
