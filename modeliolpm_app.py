@@ -99,3 +99,23 @@ st.sidebar.markdown("""
         <p>Ekonomi Pembangunan Unisba</p>
     </div>
 """, unsafe_allow_html=True)
+
+def simulate_demand_shock(L, Y, sector_index, percentage_increase):
+    """
+    Simulasi kenaikan permintaan akhir pada sektor tertentu.
+    L: Invers Leontief
+    Y: Vektor Permintaan Akhir (asli)
+    sector_index: indeks sektor yang disimulasi
+    percentage_increase: nilai persentase (misal 10 untuk 10%)
+    """
+    # 1. Buat salinan Y agar data asli tidak berubah
+    Y_new = Y.copy()
+    
+    # 2. Terapkan Shock: Y_new = Y * (1 + percent/100)
+    # Kita asumsikan shock hanya pada baris sektor_index
+    Y_new[sector_index] = Y[sector_index] * (1 + (percentage_increase / 100))
+    
+    # 3. Hitung X baru: X_new = L * Y_new
+    X_new = L.dot(Y_new)
+    
+    return X_new, Y_new
