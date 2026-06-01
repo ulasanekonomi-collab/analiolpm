@@ -129,17 +129,27 @@ if st.sidebar.button("Jalankan Simulasi"):
     if not sim_sectors:
         st.warning("Silakan pilih minimal satu sektor!")
     else:
-        # Panggil fungsi engine dengan shock_dict
+        # Panggil fungsi simulasi
         X_shock, Y_shock = simulate_demand_shock(L, Y, shock_dict)
         
-        # Tampilkan hasil
-        st.write("### 📈 Hasil Simulasi Dampak Ekonomi")
-        df_sim = pd.DataFrame({
-            "Output Awal": X,
-            "Output Setelah Simulasi": X_shock,
-            "Selisih": X_shock - X
-        }, index=sektor_names)
+        # --- PERBAIKAN: Gunakan Pandas Series agar dimensi selalu selaras ---
+        # Kita buat Series dengan index sektor_names agar baris-barisnya "terkunci"
+        X_awal_series = pd.Series(X, index=sektor_names)
+        X_shock_series = pd.Series(X_shock, index=sektor_names)
         
+        # Sekarang hitung selisihnya
+        selisih = X_shock_series - X_awal_series
+        
+        # Gabungkan ke DataFrame
+        df_sim = pd.DataFrame({
+            "Output Awal": X_awal_series,
+            "Output Setelah Simulasi": X_shock_series,
+            "Selisih": selisih
+        })
+        # --------------------------------------------------------------------
+        
+        # Tampilkan hasil
+        st.write(f"### 📈 Hasil Simulasi Dampak Ekonomi")
         st.dataframe(df_sim.style.format("{:,.0f}"))
         
         # Visualisasi
