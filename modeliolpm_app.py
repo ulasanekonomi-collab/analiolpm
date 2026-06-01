@@ -89,7 +89,7 @@ else:
 st.sidebar.markdown("---") 
 
 # 1. Menampilkan Logo (Pastikan file unisba_logo.png ada di folder yang sama)
-st.sidebar.image("logounisba.png", width=150)
+st.sidebar.image("logounisbatrans.png", width=150)
 
 # 2. Menampilkan teks dengan spasi rapat (menggunakan HTML)
 st.sidebar.markdown("""
