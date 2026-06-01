@@ -149,15 +149,24 @@ def assemble_modular_io_from_df(Z_df, P_df, Y_df):
 
 def simulate_demand_shock(L, Y, shock_dict):
     """
-    Simulasi kenaikan permintaan akhir pada beberapa sektor sekaligus.
+    Simulasi kenaikan permintaan akhir dengan pengaman dimensi.
     """
-    Y_new = Y.copy()
+    # 1. Pastikan Y adalah array 1 dimensi
+    Y_new = Y.copy().flatten()
     
-    # Terapkan shock
+    # 2. Terapkan shock
     for idx, pct in shock_dict.items():
-        Y_new[idx] = Y[idx] * (1 + (pct / 100))
+        # Pastikan index valid
+        if idx < len(Y_new):
+            Y_new[idx] = Y_new[idx] * (1 + (pct / 100))
     
-    # Hitung X baru dengan .flatten() agar hasilnya menjadi 1 dimensi (N,)
-    X_new = L.dot(Y_new).flatten() 
+    # 3. DEBUG: Pastikan ukuran L dan Y cocok sebelum dot product
+    # L seharusnya (N, N), Y seharusnya (N,)
+    n_sektor = len(Y_new)
+    if L.shape != (n_sektor, n_sektor):
+        raise ValueError(f"Dimensi L salah! L adalah {L.shape}, padahal seharusnya ({n_sektor}, {n_sektor})")
+    
+    # 4. Perkalian Vektor
+    X_new = L.dot(Y_new).flatten()
     
     return X_new, Y_new
