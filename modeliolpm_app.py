@@ -17,7 +17,7 @@ def convert_df_to_excel(df):
     return output.getvalue()
 
 st.set_page_config(page_title="Model IOLPM", layout="wide")
-st.title("📊 MODEL IOLPM: Konstruksi Data & Analisis")
+st.title("📊 ANALISIS MODEL INPUT-OUTPUT")
 
 st.sidebar.header("📁 Unggah Data")
 file_z = st.sidebar.file_uploader("1. Matriks Transaksi (Z)", type=["csv"])
@@ -42,12 +42,12 @@ if file_z and file_p and file_y:
         st.success("✅ Data berhasil dianalisis!")
         
         # A. Tabel Linkages
-        st.write("### 📊 Analisis Keterkaitan Sektoral (Linkage)")
+        st.write("### 📊 Multiplier Output, Forwarad & Backward Linkage")
         st.dataframe(df_linkages.style.format("{:.3f}").background_gradient(cmap="Greens"))
         
         excel_linkages = convert_df_to_excel(df_linkages)
         st.download_button(
-            label="📥 Download Linkages (Excel)",
+            label="📥 Download (Excel)",
             data=excel_linkages,
             file_name="analisis_linkages.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
