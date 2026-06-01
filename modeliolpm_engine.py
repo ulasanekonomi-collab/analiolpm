@@ -1,61 +1,43 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-def clean_and_load(file_obj):
+def process_pure_transaction_matrix(file_path):
     """
-    Membaca CSV, membersihkan spasi internal, dan mengonversi ke angka murni.
+    Engine V14: Pembacaan matriks dinamis (flexible size) dan anti-typo.
     """
+    # 1. Membaca data dengan deteksi delimiter otomatis
     try:
-        df = pd.read_csv(file_obj, sep=';')
+        df = pd.read_csv(file_path, sep=';')
     except:
-        df = pd.read_csv(file_obj, sep=',')
+        df = pd.read_csv(file_path, sep=',')
     
-    # Bersihkan nama kolom
-    df.columns = df.columns.str.strip()
+    # 2. Menentukan jumlah sektor secara otomatis (N)
+    # Kita asumsikan jumlah sektor adalah jumlah baris yang terbaca
+    n_sectors = len(df)
     
-    # Fungsi pembersih sel
-    def clean_and_load(file_obj):
-        """
-        Versi Anti-Error: Mengubah data menjadi numerik dengan paksa.
-        """
+    # 3. Mengambil Label Baris (Deskripsi) secara posisional (kolom ke-2, indeks 1)
+    # Ini menghindari KeyError akibat typo 'Deksripsi' vs 'Deskripsi'
+    sektor_names = df.iloc[:, 1].astype(str).str.strip().tolist()
+    
+    # 4. Mengambil Matriks Angka secara dinamis (kolom ke-3 hingga ke-(N+2))
+    # Kita ambil data angka dari kolom ke-3 (indeks 2) sampai sejumlah n_sectors
+    Z_raw = df.iloc[:, 2:2+n_sectors]
+    
+    # Bersihkan data (hapus spasi, ganti koma dengan titik)
+    def clean_cell(val):
+        if pd.isna(val): return 0.0
+        s = str(val).strip().replace(' ', '').replace(',', '.')
         try:
-            df = pd.read_csv(file_obj, sep=';')
+            return float(s)
         except:
-            df = pd.read_csv(file_obj, sep=',')
-    
-        # Bersihkan nama kolom dari spasi
-        df.columns = df.columns.str.strip()
-    
-        # --- BAGIAN PERBAIKAN DI SINI ---
-        # Kita ambil kolom data (mulai kolom ke-3 / indeks 2)
-        # pd.to_numeric dengan errors='coerce' akan mengubah teks menjadi NaN
-        # fillna(0) mengubah NaN menjadi 0 agar kalkulasi aman
-        df_numeric = df.iloc[:, 2:].apply(pd.to_numeric, errors='coerce').fillna(0.0)
-    
-        return df, df_numeric
+            return 0.0
             
-    # Mengambil data angka (mengasumsikan kolom 0: Kode, kolom 1: Deskripsi, sisanya angka)
-    df_numeric = df.iloc[:, 2:].applymap(clean_cell)
-    return df, df_numeric
-
-def assemble_modular_io(file_z, file_p, file_y):
-    """
-    Merakit matriks Z, P, dan Y menjadi struktur tabel IO yang utuh.
-    """
-    df_z, Z_df = clean_and_load(file_z)
-    df_p, P_df = clean_and_load(file_p)
-    df_y, Y_df = clean_and_load(file_y)
+    Z_numeric = Z_raw.applymap(clean_cell)
+    Z_val = Z_numeric.values.astype(float)
     
-    # Nama sektor diambil dari kolom deskripsi (indeks 1)
-    sektor_names = df_z.iloc[:, 1].tolist()
+    # 5. Kalkulasi Agregat
+    df_result = pd.DataFrame(Z_val, index=sektor_names, columns=sektor_names)
+    df_result['TOTAL OUTPUT'] = Z_val.sum(axis=1)
+    df_result.loc['TOTAL INPUT'] = list(Z_val.sum(axis=0)) + [Z_val.sum()]
     
-    # Konversi ke NumPy Array
-    Z = Z_df.values
-    P = P_df.values
-    Y = Y_df.values
-    
-    # Menghitung Total Output per sektor (X)
-    # Total Output = Row Sum of Z + Row Sum of Y
-    X = Z.sum(axis=1) + Y.sum(axis=1)
-    
-    return Z, P, Y, X, sektor_names
+    return df_result, Z_val, sektor_names
