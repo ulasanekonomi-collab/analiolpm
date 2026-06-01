@@ -12,21 +12,22 @@ file_y = st.sidebar.file_uploader("3. Permintaan Akhir (Y)", type=["csv"])
 
 if file_z and file_p and file_y:
     try:
-        Z, P, Y, X = assemble_modular_io(file_z, file_p, file_y)
+        # Menangkap variabel sektor_names yang baru
+        Z, P, Y, X, sektor_names = assemble_modular_io(file_z, file_p, file_y)
         
-        st.success("✅ **Struktur Data Berhasil Disinkronisasi!**")
+        # Membuat DataFrame untuk grafik agar sumbu X menggunakan nama sektor
+        df_output = pd.DataFrame(X, index=sektor_names, columns=["Total Output"])
         
-        # Ringkasan Audit untuk memastikan tidak ada kesalahan dimensi
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Dimensi Transaksi (Z)", f"{Z.shape[0]}x{Z.shape[1]}")
-        col2.metric("Dimensi Input Primer (P)", f"{P.shape[0]}x{P.shape[1]}")
-        col3.metric("Dimensi Permintaan Akhir (Y)", f"{Y.shape[0]}x{Y.shape[1]}")
+        st.success("✅ Data berhasil diproses dengan pelabelan sektor!")
         
-        # Visualisasi sederhana untuk verifikasi awal
-        st.write("### Grafik Total Output per Sektor (X)")
-        st.bar_chart(X)
+        st.write("### Grafik Total Output per Sektor")
+        # Sekarang grafik akan menampilkan nama sektor di sumbu X
+        st.bar_chart(df_output)
+        
+        st.write("### Data Tabel Output")
+        st.dataframe(df_output)
         
     except Exception as e:
-        st.error(f"🚨 **Kesalahan perakitan data:** {e}")
+        st.error(f"Terjadi kesalahan: {e}")
 else:
     st.info("Silakan unggah ketiga berkas CSV (Z, P, dan Y) pada panel di sebelah kiri.")
