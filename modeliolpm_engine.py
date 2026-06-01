@@ -25,29 +25,28 @@ def load_csv_data(file_obj):
 
 def assemble_modular_io(file_z, file_p, file_y):
     """
-    Fungsi utama untuk merakit data modular.
-    Menggantikan fungsi process_pure_transaction_matrix yang lama.
+    Merakit matriks dan mengekstrak nama sektor secara dinamis.
     """
-    # 1. Load data
-    df_z, Z_df = load_csv_data(file_z)
-    df_p, P_df = load_csv_data(file_p)
-    df_y, Y_df = load_csv_data(file_y)
+    # Load data
+    df_z, Z_df = clean_and_load(file_z)
+    df_p, P_df = clean_and_load(file_p)
+    df_y, Y_df = clean_and_load(file_y)
     
-    # 2. Ekstraksi data angka ke NumPy
+    # EKSTRAKSI NAMA SEKTOR (Kolom indeks 1)
+    # Ini mengambil deskripsi sektor tanpa peduli apa nama judul kolomnya
+    sektor_names = df_z.iloc[:, 1].astype(str).str.strip().tolist()
+    
+    # Konversi ke NumPy Array
     Z = Z_df.values
     P = P_df.values
     Y = Y_df.values
     
-    # 3. Validasi dan Penyesuaian Dimensi (Auto-Transpose)
-    # Memastikan Input Primer dan Permintaan Akhir sesuai dengan dimensi Transaksi (Z)
-    if P.shape[1] != Z.shape[1] and P.shape[0] == Z.shape[1]:
-        P = P.T
-    if Y.shape[0] != Z.shape[0]:
-        Y = Y.T
+    # Validasi Transpose (tetap dipertahankan untuk keamanan data)
+    if P.shape[1] != Z.shape[1] and P.shape[0] == Z.shape[1]: P = P.T
+    if Y.shape[0] != Z.shape[0]: Y = Y.T
     
-    # 4. Kalkulasi Total Output (X)
-    # X = (Sum baris Z) + (Sum baris Y)
+    # Menghitung Total Output
     X = Z.sum(axis=1) + Y.sum(axis=1)
     
-    # 5. Mengembalikan hasil untuk digunakan di app.py
-    return Z, P, Y, X
+    # Mengembalikan sektor_names agar bisa dipakai di app.py
+    return Z, P, Y, X, sektor_names
