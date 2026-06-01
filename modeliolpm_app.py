@@ -46,7 +46,7 @@ if file_z and file_p and file_y:
         st.success("✅ Data berhasil dianalisis!")
         
         # A. Tabel Linkages
-        st.write("### 📊 Multiplier Output, Forwarad & Backward Linkage")
+        st.write("### 📊 Multiplier Output, Forward & Backward Linkage")
         st.dataframe(df_linkages.style.format("{:.3f}").background_gradient(cmap="Greens"))
         
         excel_linkages = convert_df_to_excel(df_linkages)
