@@ -3,41 +3,38 @@ import pandas as pd
 
 def process_pure_transaction_matrix(file_path):
     """
-    Engine V14: Pembacaan matriks dinamis (flexible size) dan anti-typo.
+    Engine V15: Menggunakan positional indexing (iloc) secara murni.
+    Tidak akan pernah terjadi KeyError karena mengabaikan nama label kolom.
     """
-    # 1. Membaca data dengan deteksi delimiter otomatis
     try:
-        df = pd.read_csv(file_path, sep=';')
+        # Membaca CSV dan mengabaikan header asli agar tidak ada konflik nama kolom
+        # Kita buat header baru secara manual
+        df = pd.read_csv(file_path, sep=';', header=None, skiprows=1)
     except:
-        df = pd.read_csv(file_path, sep=',')
+        df = pd.read_csv(file_path, sep=',', header=None, skiprows=1)
     
-    # 2. Menentukan jumlah sektor secara otomatis (N)
-    # Kita asumsikan jumlah sektor adalah jumlah baris yang terbaca
-    n_sectors = len(df)
-    
-    # 3. Mengambil Label Baris (Deskripsi) secara posisional (kolom ke-2, indeks 1)
-    # Ini menghindari KeyError akibat typo 'Deksripsi' vs 'Deskripsi'
+    # 1. Ambil Nama Sektor (Sektor/Deskripsi selalu di kolom indeks 1)
+    # Gunakan iloc untuk posisi, bukan nama
     sektor_names = df.iloc[:, 1].astype(str).str.strip().tolist()
     
-    # 4. Mengambil Matriks Angka secara dinamis (kolom ke-3 hingga ke-(N+2))
-    # Kita ambil data angka dari kolom ke-3 (indeks 2) sampai sejumlah n_sectors
-    Z_raw = df.iloc[:, 2:2+n_sectors]
+    # 2. Ambil Matriks Transaksi (Data angka dimulai dari kolom indeks 2 sampai 18)
+    # Kita ambil 17 baris pertama
+    Z_raw = df.iloc[0:17, 2:19]
     
-    # Bersihkan data (hapus spasi, ganti koma dengan titik)
+    # 3. Fungsi pembersih angka yang lebih aman
     def clean_cell(val):
-        if pd.isna(val): return 0.0
-        s = str(val).strip().replace(' ', '').replace(',', '.')
         try:
-            return float(s)
+            # Ganti spasi, koma jadi titik, lalu float
+            return float(str(val).replace(' ', '').replace(',', '.'))
         except:
             return 0.0
-            
+
     Z_numeric = Z_raw.applymap(clean_cell)
     Z_val = Z_numeric.values.astype(float)
     
-    # 5. Kalkulasi Agregat
-    df_result = pd.DataFrame(Z_val, index=sektor_names, columns=sektor_names)
+    # 4. Kalkulasi
+    df_result = pd.DataFrame(Z_val, index=sektor_names[0:17], columns=[str(i) for i in range(1, 18)])
     df_result['TOTAL OUTPUT'] = Z_val.sum(axis=1)
     df_result.loc['TOTAL INPUT'] = list(Z_val.sum(axis=0)) + [Z_val.sum()]
     
-    return df_result, Z_val, sektor_names
+    return df_result, Z_val, sektor_names[0:17]
