@@ -52,7 +52,7 @@ if file_z and file_p and file_y:
         st.altair_chart(chart, use_container_width=True)
         
     except Exception as e:
-        st.error(f"Terjadi kesalahan saat memproses data: {e}")
+        st.error(f"Terjadi kesalahan : {e}")
 else:
     st.info("Silakan unggah ketiga file CSV di sidebar untuk memulai analisis.")
 
