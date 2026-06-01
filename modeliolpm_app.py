@@ -41,3 +41,23 @@ st.bar_chart(df_struct[["Input: Bahan Baku (%)", "Input: Input Primer (%)"]])
 # Visualisasi Stacked Bar Chart untuk Output
 # st.write("### Distribusi Output per Sektor (Bahan Baku vs Permintaan Akhir)")
 # st.bar_chart(df_struct[["Output: Bahan Baku (%)", "Output: Permintaan Akhir (%)"]])
+
+# ... (setelah pemrosesan Z, P, Y, X) ...
+
+# Panggil fungsi Leontief
+A, L = calculate_leontief_inverse(Z, X)
+
+st.write("### 🧮 Analisis Multiplier Output")
+st.write("Matriks di bawah menunjukkan dampak total (langsung + tidak langsung) dari kenaikan permintaan 1 unit.")
+
+# Kita buat DataFrame agar rapi
+df_L = pd.DataFrame(L, index=sektor_names, columns=sektor_names)
+
+# Tampilkan dengan format heatmap sederhana (highlight nilai tinggi)
+st.dataframe(df_L.style.background_gradient(cmap="Blues", axis=None).format("{:.4f}"))
+
+# Opsional: Hitung Output Multiplier (Sum kolom L)
+output_multiplier = L.sum(axis=0)
+st.write("### 🚀 Multiplier Output per Sektor")
+df_mult = pd.DataFrame(output_multiplier, index=sektor_names, columns=["Multiplier"])
+st.bar_chart(df_mult)
