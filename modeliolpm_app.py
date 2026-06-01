@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from modeliolpm_engine import assemble_modular_io, calculate_structural_coefficients, calculate_leontief_inverse
+import altair as alt
 
 st.set_page_config(page_title="Model IOLPM", layout="wide")
 st.title("📊 MODEL IOLPM: Konstruksi Data")
@@ -47,17 +48,26 @@ st.bar_chart(df_struct[["Input: Bahan Baku (%)", "Input: Input Primer (%)"]])
 # Panggil fungsi Leontief
 A, L = calculate_leontief_inverse(Z, X)
 
-st.write("### 🧮 Analisis Multiplier Output")
-st.write("Matriks di bawah menunjukkan dampak total (langsung + tidak langsung) dari kenaikan permintaan 1 unit.")
-
-# Kita buat DataFrame agar rapi
-df_L = pd.DataFrame(L, index=sektor_names, columns=sektor_names)
-
-# Tampilkan dengan format heatmap sederhana (highlight nilai tinggi)
-st.dataframe(df_L.style.background_gradient(cmap="Blues", axis=None).format("{:.4f}"))
-
-# Opsional: Hitung Output Multiplier (Sum kolom L)
-output_multiplier = L.sum(axis=0)
 st.write("### 🚀 Multiplier Output per Sektor")
-df_mult = pd.DataFrame(output_multiplier, index=sektor_names, columns=["Multiplier"])
-st.bar_chart(df_mult)
+
+# Mengubah data agar bisa diolah oleh Altair
+df_chart = df_mult.reset_index().rename(columns={'index': 'Sektor', 'Multiplier': 'Nilai'})
+
+# Membuat "Lollipop Chart" (Garis Vertikal)
+# Garis tipis (stem)
+base = alt.Chart(df_chart).encode(
+    x=alt.X('Sektor', sort='-y', axis=alt.Axis(labelAngle=-45)) # Label miring agar terbaca
+)
+
+line = base.mark_rule(color='skyblue').encode(
+    y='Nilai'
+)
+
+# Titik (lollipop head)
+circle = base.mark_circle(size=60, color='blue').encode(
+    y='Nilai'
+)
+
+chart = line + circle
+
+st.altair_chart(chart, use_container_width=True)
