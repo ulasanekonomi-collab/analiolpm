@@ -26,7 +26,7 @@ file_y = st.sidebar.file_uploader("3. Permintaan Akhir (Y)", type=["csv"])
 # Tambahkan ini di bagian bawah sidebar
 st.sidebar.markdown("---")  # Garis pemisah
 st.sidebar.markdown("Model Input-Output")
-st.sidebar.markdown("Dikembangkan oleh Wassily Leontief (1941) untuk menganalisis keragaan ekonomi")
+st.sidebar.markdown("Dikembangkan oleh Wassily Leontief (1941) untuk menganalisis keragaan ekonomi.")
 
 if file_z and file_p and file_y:
     try:
@@ -89,7 +89,7 @@ else:
 st.sidebar.markdown("---") 
 
 # 1. Menampilkan Logo (Pastikan file unisba_logo.png ada di folder yang sama)
-st.sidebar.image("logounisbatrans.png", width=150)
+st.sidebar.image("logounisba.png", width=100)
 
 # 2. Menampilkan teks dengan spasi rapat (menggunakan HTML)
 st.sidebar.markdown("""
