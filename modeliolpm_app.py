@@ -64,47 +64,55 @@ if file_z and file_p and file_y:
         base = alt.Chart(df_chart).encode(x=alt.X('Sektor', sort='-y', axis=alt.Axis(labelAngle=-45)))
         st.altair_chart(base.mark_rule(color='skyblue').encode(y='Nilai') + base.mark_circle(size=60, color='blue').encode(y='Nilai'), use_container_width=True)
 
-        # --- D. FITUR SIMULASI (Di dalam IF agar aman) ---
+        # --- D. FITUR SIMULASI PERUBAHAN OUTPUT (Delta X = L * Delta Y) ---
         st.sidebar.markdown("---")
-        st.sidebar.header("🚀 Simulasi Shock")
-        sim_sectors = st.sidebar.multiselect("Pilih Sektor untuk Simulasi:", sektor_names)
+        st.sidebar.header("🚀 Skenario Simulasi ($\Delta Y$)")
+        sim_sectors = st.sidebar.multiselect("Pilih Sektor yang Alami Perubahan:", sektor_names)
         
-        shock_dict = {}
+        delta_Y_dict = {}
+        n_sektor = len(sektor_names)
+        
         if sim_sectors:
-            st.sidebar.write("Input % kenaikan:")
+            st.sidebar.write("Masukkan Nilai Perubahan ($\Delta Y$):")
             for s in sim_sectors:
-                pct = st.sidebar.number_input(f"{s} (%):", 0.0, 200.0, 10.0, 1.0)
-                shock_dict[sektor_names.index(s)] = pct
-        # Tepat sebelum st.sidebar.button("Jalankan Simulasi")
-        st.sidebar.write(f"Dimensi L saat ini: {L.shape}")
+                # User memasukkan nilai absolut perubahan permintaan akhir
+                val = st.sidebar.number_input(f"Tambahan Nilai untuk {s}:", value=0.0, step=10.0)
+                delta_Y_dict[sektor_names.index(s)] = val
+        
         if st.sidebar.button("Jalankan Simulasi"):
-            if not shock_dict:
-                st.warning("Pilih sektor dulu!")
+            if not delta_Y_dict:
+                st.warning("Silakan pilih sektor dan tentukan nilai $\Delta Y$ terlebih dahulu!")
             else:
-                # 1. Panggil simulasi
-                X_shock, Y_shock = simulate_demand_shock(L, Y, shock_dict)
+                # Panggil fungsi murni dari engine
+                delta_X, delta_Y = calculate_output_change(L, delta_Y_dict, n_sektor)
                 
-                # 2. DEBUGGING: Kita cek dulu bentuk datanya sebelum dimasukkan ke DataFrame
-                st.write(f"--- Debug Info ---")
-                st.write(f"Jumlah Sektor (Index): {len(sektor_names)}")
-                st.write(f"Jumlah Data Output Shock: {len(X_shock)}")
+                # Masukkan hasil ke dalam Pandas Series & DataFrame dengan indeks sektor
+                dy_series = pd.Series(delta_Y, index=sektor_names)
+                dx_series = pd.Series(delta_X, index=sektor_names)
                 
-                # 3. Validasi
-                if len(X_shock) != len(sektor_names):
-                    st.error(f"❌ Error: Jumlah data ({len(X_shock)}) tidak cocok dengan jumlah sektor ({len(sektor_names)}). Cek kembali fungsi di engine!")
-                else:
-                    # Pakai Series untuk menghindari ValueError
-                    X_awal = pd.Series(X, index=sektor_names)
-                    X_akhir = pd.Series(X_shock, index=sektor_names)
-                    df_sim = pd.DataFrame({
-                        "Output Awal": X_awal, 
-                        "Output Baru": X_akhir, 
-                        "Selisih": X_akhir - X_awal
-                    })
-                    
-                    st.write("### 📉 Hasil Simulasi")
-                    st.dataframe(df_sim.style.format("{:,.0f}"))
-                    st.bar_chart(df_sim["Selisih"].sort_values(ascending=False).head(10))
+                df_sim_result = pd.DataFrame({
+                    "Perubahan Permintaan ($\Delta Y$)": dy_series,
+                    "Dampak Output ($\Delta X$)": dx_series
+                })
+                
+                # --- TAMPILKAN HASIL SIMULASI ---
+                st.write("### 📈 Hasil Simulasi Perubahan Output ($\Delta X = L \\times \Delta Y$)")
+                st.write("Tabel di bawah ini menunjukkan seberapa besar output di setiap sektor harus berubah/bertambah untuk merespon perubahan permintaan akhir:")
+                
+                st.dataframe(df_sim_result.style.format("{:,.2f}").background_gradient(cmap="Blues", subset=["Dampak Output ($\Delta X$)"]))
+                
+                # Tombol Download Hasil Simulasi dalam Excel
+                excel_sim = convert_df_to_excel(df_sim_result)
+                st.download_button(
+                    label="📥 Download Hasil Simulasi (Excel)",
+                    data=excel_sim,
+                    file_name="hasil_simulasi_output.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+                
+                # Visualisasi 10 Sektor dengan Dampak Output Terbesar
+                st.write("#### 📊 Top 10 Sektor dengan Dampak Perubahan Output Terbesar")
+                st.bar_chart(df_sim_result["Dampak Output ($\Delta X$)"].sort_values(ascending=False).head(10))
 
     except Exception as e:
         st.error(f"Terjadi kesalahan: {e}")
