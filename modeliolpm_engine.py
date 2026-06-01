@@ -99,3 +99,32 @@ def calculate_leontief_inverse(Z, X):
         L = np.zeros_like(I)
         
     return A, L
+
+def calculate_linkages(L, sektor_names):
+    """
+    Menghitung Output Multiplier, Backward Linkage (BL), dan Forward Linkage (FL).
+    BL: Power of Dispersion
+    FL: Sensitivity of Dispersion
+    """
+    n = L.shape[0] # Jumlah sektor
+    
+    # 1. Output Multiplier = Sum Kolom L
+    col_sums = L.sum(axis=0)
+    
+    # 2. Rata-rata total matriks L
+    avg_total_sum = L.sum() / n
+    
+    # 3. Backward Linkage (BL) = (Sum Kolom L) / (Rata-rata L)
+    BL = col_sums / (L.sum() / n)
+    
+    # 4. Forward Linkage (FL) = (Sum Baris L) / (Rata-rata L)
+    FL = L.sum(axis=1) / (L.sum() / n)
+    
+    # Gabungkan ke DataFrame
+    df_linkages = pd.DataFrame({
+        "Output Multiplier": col_sums,
+        "Backward Linkage": BL,
+        "Forward Linkage": FL
+    }, index=sektor_names)
+    
+    return df_linkages
