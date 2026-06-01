@@ -128,3 +128,21 @@ def calculate_linkages(L, sektor_names):
     }, index=sektor_names)
     
     return df_linkages
+
+def assemble_modular_io_from_df(Z_df, P_df, Y_df):
+    """
+    Fungsi baru: Merakit matriks dari DataFrame yang sudah dipilih/dipetakan oleh User.
+    Input: DataFrame yang sudah difilter di app.py
+    Output: Z, P, Y, X (dalam format numpy array siap hitung)
+    """
+    # 1. Konversi DataFrame ke NumPy Array
+    Z = Z_df.values.astype(float)
+    P = P_df.values.astype(float)
+    Y = Y_df.values.astype(float)
+    
+    # 2. Kalkulasi Total Output (X)
+    # X = (Sum baris Z) + (Sum baris Y)
+    X = Z.sum(axis=1) + Y.sum(axis=1)
+    
+    # 3. Kembalikan hasil agar bisa lanjut ke analisis Leontief
+    return Z, P, Y, X
