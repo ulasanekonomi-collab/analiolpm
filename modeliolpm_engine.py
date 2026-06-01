@@ -46,3 +46,28 @@ def assemble_modular_io(file_z, file_p, file_y):
     X = Z.sum(axis=1) + Y.sum(axis=1)
     
     return Z, P, Y, X, sektor_names
+
+def calculate_structural_coefficients(Z, P, Y, X, sektor_names):
+    """
+    Menghitung persentase distribusi output dan struktur input.
+    """
+    # Pastikan X tidak nol untuk menghindari division by zero
+    X_safe = np.where(X == 0, 1, X)
+    
+    # 1. Analisis Output (Row-wise)
+    intermediate_output_share = (Z.sum(axis=1) / X_safe) * 100
+    final_demand_share = (Y.sum(axis=1) / X_safe) * 100
+    
+    # 2. Analisis Input (Column-wise)
+    intermediate_input_share = (Z.sum(axis=0) / X_safe) * 100
+    primary_input_share = (P.sum(axis=0) / X_safe) * 100
+    
+    # Gabungkan ke dalam DataFrame untuk kemudahan tampilan
+    df_structure = pd.DataFrame({
+        "Output: Bahan Baku (%)": intermediate_output_share,
+        "Output: Permintaan Akhir (%)": final_demand_share,
+        "Input: Bahan Baku (%)": intermediate_input_share,
+        "Input: Input Primer (%)": primary_input_share
+    }, index=sektor_names)
+    
+    return df_structure
