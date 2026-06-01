@@ -23,3 +23,20 @@ if file_z and file_p and file_y:
         
     except Exception as e:
         st.error(f"Terjadi kesalahan: {e}")
+
+# ... (setelah kode pemrosesan Z, P, Y, X) ...
+
+# Memanggil fungsi analisis struktur
+df_struct = calculate_structural_coefficients(Z, P, Y, X, sektor_names)
+
+st.write("### 📈 Analisis Struktur Ekonomi Sektoral")
+st.write("Tabel di bawah menunjukkan komposisi distribusi output dan struktur biaya input:")
+st.dataframe(df_struct.style.format("{:.2f} %"))
+
+# Visualisasi Stacked Bar Chart untuk Input
+st.write("### Komposisi Biaya Input per Sektor (Bahan Baku vs Input Primer)")
+st.bar_chart(df_struct[["Input: Bahan Baku (%)", "Input: Input Primer (%)"]])
+
+# Visualisasi Stacked Bar Chart untuk Output
+st.write("### Distribusi Output per Sektor (Bahan Baku vs Permintaan Akhir)")
+st.bar_chart(df_struct[["Output: Bahan Baku (%)", "Output: Permintaan Akhir (%)"]])
