@@ -149,16 +149,15 @@ def assemble_modular_io_from_df(Z_df, P_df, Y_df):
 
 def simulate_demand_shock(L, Y, shock_dict):
     """
-    shock_dict: Dictionary {index_sektor: persentase_kenaikan}
-    Contoh: {0: 10, 2: 5} -> Sektor 0 naik 10%, Sektor 2 naik 5%
+    Simulasi kenaikan permintaan akhir pada beberapa sektor sekaligus.
     """
     Y_new = Y.copy()
     
-    # Terapkan shock berdasarkan dictionary yang dikirim
+    # Terapkan shock
     for idx, pct in shock_dict.items():
         Y_new[idx] = Y[idx] * (1 + (pct / 100))
     
-    # Hitung X baru
-    X_new = L.dot(Y_new)
+    # Hitung X baru dengan .flatten() agar hasilnya menjadi 1 dimensi (N,)
+    X_new = L.dot(Y_new).flatten() 
     
     return X_new, Y_new
