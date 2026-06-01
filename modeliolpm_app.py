@@ -100,22 +100,30 @@ st.sidebar.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-def simulate_demand_shock(L, Y, sector_index, percentage_increase):
-    """
-    Simulasi kenaikan permintaan akhir pada sektor tertentu.
-    L: Invers Leontief
-    Y: Vektor Permintaan Akhir (asli)
-    sector_index: indeks sektor yang disimulasi
-    percentage_increase: nilai persentase (misal 10 untuk 10%)
-    """
-    # 1. Buat salinan Y agar data asli tidak berubah
-    Y_new = Y.copy()
-    
-    # 2. Terapkan Shock: Y_new = Y * (1 + percent/100)
-    # Kita asumsikan shock hanya pada baris sektor_index
-    Y_new[sector_index] = Y[sector_index] * (1 + (percentage_increase / 100))
-    
-    # 3. Hitung X baru: X_new = L * Y_new
-    X_new = L.dot(Y_new)
-    
-    return X_new, Y_new
+# --- SIMULASI ---
+        st.sidebar.markdown("---")
+        st.sidebar.header("🚀 Simulasi Shock")
+        
+        sim_sector = st.sidebar.selectbox("Pilih Sektor Simulasi:", sektor_names)
+        sim_pct = st.sidebar.slider("Persentase Kenaikan Permintaan (%):", 0, 100, 10)
+        
+        if st.sidebar.button("Jalankan Simulasi"):
+            # Cari index sektor
+            idx = sektor_names.index(sim_sector)
+            
+            # Panggil fungsi simulasi
+            X_shock, Y_shock = simulate_demand_shock(L, Y, idx, sim_pct)
+            
+            # Tampilkan Perbandingan
+            st.write(f"### Hasil Simulasi: Kenaikan {sim_pct}% pada {sim_sector}")
+            
+            df_sim = pd.DataFrame({
+                "Output Awal": X,
+                "Output Setelah Simulasi": X_shock,
+                "Selisih": X_shock - X
+            }, index=sektor_names)
+            
+            st.dataframe(df_sim.style.format("{:,.0f}"))
+            
+            # Visualisasi Dampak
+            st.bar_chart(df_sim[["Output Awal", "Output Setelah Simulasi"]])
