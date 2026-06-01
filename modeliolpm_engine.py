@@ -60,9 +60,11 @@ def calculate_structural_coefficients(Z, P, Y, X, sektor_names):
     
     # 2. Analisis Input (Column-wise)
     intermediate_input_share = (Z.sum(axis=0) / X_safe) * 100
+    # P biasanya memiliki dimensi (indikator x sektor), 
+    # kita sum di axis 0 untuk mendapatkan total input primer per sektor
     primary_input_share = (P.sum(axis=0) / X_safe) * 100
     
-    # Gabungkan ke dalam DataFrame untuk kemudahan tampilan
+    # Gabungkan ke dalam DataFrame
     df_structure = pd.DataFrame({
         "Output: Bahan Baku (%)": intermediate_output_share,
         "Output: Permintaan Akhir (%)": final_demand_share,
