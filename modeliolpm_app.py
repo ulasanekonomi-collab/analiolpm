@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-from modeliolpm_engine import assemble_modular_io, calculate_structural_coefficients, calculate_leontief_inverse
 import altair as alt
+from modeliolpm_engine import assemble_modular_io, calculate_structural_coefficients, calculate_leontief_inverse
 
 st.set_page_config(page_title="Model IOLPM", layout="wide")
 st.title("📊 MODEL IOLPM: Konstruksi Data")
