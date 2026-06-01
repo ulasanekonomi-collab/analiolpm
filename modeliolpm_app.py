@@ -100,30 +100,42 @@ st.sidebar.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# --- SIMULASI ---
+# Pastikan di bagian paling atas sudah ada import ini:
+from modeliolpm_engine import (
+    # ... (fungsi lainnya)
+    simulate_demand_shock 
+)
+
+# ... (di dalam blok if file_z and file_p and file_y:) ...
+
+# --- SIMULASI MULTI-SEKTOR ---
 st.sidebar.markdown("---")
 st.sidebar.header("🚀 Simulasi Shock")
-        
-sim_sector = st.sidebar.selectbox("Pilih Sektor Simulasi:", sektor_names)
+
+# Menggunakan multiselect agar user bisa pilih banyak
+sim_sectors = st.sidebar.multiselect("Pilih Sektor Simulasi:", sektor_names)
 sim_pct = st.sidebar.slider("Persentase Kenaikan Permintaan (%):", 0, 100, 10)
-        
+
 if st.sidebar.button("Jalankan Simulasi"):
-    # Cari index sektor
-    idx = sektor_names.index(sim_sector)
-            
-    # Panggil fungsi simulasi
-    X_shock, Y_shock = simulate_demand_shock(L, Y, idx, sim_pct)
-            
-    # Tampilkan Perbandingan
-    st.write(f"### Hasil Simulasi: Kenaikan {sim_pct}% pada {sim_sector}")
-            
-    df_sim = pd.DataFrame({
-        "Output Awal": X,
-        "Output Setelah Simulasi": X_shock,
-        "Selisih": X_shock - X
-    }, index=sektor_names)
-            
-    st.dataframe(df_sim.style.format("{:,.0f}"))
-            
-    # Visualisasi Dampak
-    st.bar_chart(df_sim[["Output Awal", "Output Setelah Simulasi"]])
+    if not sim_sectors:
+        st.warning("Silakan pilih minimal satu sektor terlebih dahulu!")
+    else:
+        # Cari index dari sektor yang dipilih user
+        indices = [sektor_names.index(s) for s in sim_sectors]
+        
+        # Panggil fungsi simulasi
+        X_shock, Y_shock = simulate_demand_shock(L, Y, indices, sim_pct)
+        
+        # Tampilkan Perbandingan
+        st.write(f"### Hasil Simulasi: Kenaikan {sim_pct}% pada sektor: {', '.join(sim_sectors)}")
+        
+        df_sim = pd.DataFrame({
+            "Output Awal": X,
+            "Output Setelah Simulasi": X_shock,
+            "Selisih": X_shock - X
+        }, index=sektor_names)
+        
+        st.dataframe(df_sim.style.format("{:,.0f}"))
+        
+        # Visualisasi Dampak (Kita ambil top 10 dampak terbesar agar grafik tidak terlalu penuh)
+        st.bar_chart(df_sim["Selisih"].sort_values(ascending=False).head(10))
