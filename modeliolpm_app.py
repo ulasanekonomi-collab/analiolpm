@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from modeliolpm_engine import assemble_modular_io
+from modeliolpm_engine import assemble_modular_io, calculate_structural_coefficients
 
 st.set_page_config(page_title="Model IOLPM", layout="wide")
 st.title("📊 MODEL IOLPM: Konstruksi Data")
@@ -12,15 +12,16 @@ file_y = st.sidebar.file_uploader("3. Permintaan Akhir (Y)", type=["csv"])
 
 if file_z and file_p and file_y:
     try:
-        # Panggil fungsi perakitan
         Z, P, Y, X, sektor_names = assemble_modular_io(file_z, file_p, file_y)
         
-        st.success("✅ Data berhasil diproses!")
+        # Memanggil fungsi yang tadi sudah diperbaiki
+        df_struct = calculate_structural_coefficients(Z, P, Y, X, sektor_names)
         
-        # Tampilkan Grafik
-        df_output = pd.DataFrame(X, index=sektor_names, columns=["Total Output"])
-        st.bar_chart(df_output)
+        st.success("✅ Struktur ekonomi berhasil dianalisis!")
+        st.dataframe(df_struct.style.format("{:.2f} %"))
         
+        # ... (visualisasi chart) ...
+
     except Exception as e:
         st.error(f"Terjadi kesalahan: {e}")
 
