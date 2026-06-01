@@ -57,20 +57,20 @@ else:
 # --- AKHIR GEMBOK ---
 
     # Pastikan import sudah mencakup fungsi baru ini
-    from modeliolpm_engine import (
-        assemble_modular_io, 
-        calculate_structural_coefficients, 
-        calculate_leontief_inverse, 
-        calculate_linkages # <--- Jangan lupa tambah ini
-    )
+from modeliolpm_engine import (
+    assemble_modular_io, 
+    calculate_structural_coefficients, 
+    calculate_leontief_inverse, 
+    calculate_linkages # <--- Jangan lupa tambah ini
+)
 
-    # ... (setelah kode perhitungan L) ...
+# ... (setelah kode perhitungan L) ...
 
-    # 3. Analisis Linkages
-    df_linkages = calculate_linkages(L, sektor_names)
+# 3. Analisis Linkages
+df_linkages = calculate_linkages(L, sektor_names)
 
-    st.write("### 📊 Analisis Keterkaitan Sektoral (Linkage)")
-    st.write("Nilai > 1 menunjukkan sektor tersebut memiliki keterkaitan di atas rata-rata.")
+st.write("### 📊 Analisis Keterkaitan Sektoral (Linkage)")
+st.write("Nilai > 1 menunjukkan sektor tersebut memiliki keterkaitan di atas rata-rata.")
 
-    # Menampilkan tabel gabungan
-    st.dataframe(df_linkages.style.format("{:.3f}").background_gradient(cmap="Greens"))
+# Menampilkan tabel gabungan
+st.dataframe(df_linkages.style.format("{:.3f}").background_gradient(cmap="Greens"))
