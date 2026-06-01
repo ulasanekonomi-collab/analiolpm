@@ -147,22 +147,18 @@ def assemble_modular_io_from_df(Z_df, P_df, Y_df):
     # 3. Kembalikan hasil agar bisa lanjut ke analisis Leontief
     return Z, P, Y, X
 
-def simulate_demand_shock(L, Y, sector_index, percentage_increase):
+def simulate_demand_shock(L, Y, sector_indices, percentage_increase):
     """
-    Simulasi kenaikan permintaan akhir pada sektor tertentu.
-    L: Invers Leontief
-    Y: Vektor Permintaan Akhir (asli)
-    sector_index: indeks sektor yang disimulasi
-    percentage_increase: nilai persentase (misal 10 untuk 10%)
+    Simulasi kenaikan permintaan akhir pada beberapa sektor sekaligus.
+    sector_indices: list indeks sektor (misal: [0, 2])
     """
-    # 1. Buat salinan Y agar data asli tidak berubah
     Y_new = Y.copy()
     
-    # 2. Terapkan Shock: Y_new = Y * (1 + percent/100)
-    # Kita asumsikan shock hanya pada baris sektor_index
-    Y_new[sector_index] = Y[sector_index] * (1 + (percentage_increase / 100))
+    # Terapkan shock untuk setiap sektor yang dipilih
+    for idx in sector_indices:
+        Y_new[idx] = Y[idx] * (1 + (percentage_increase / 100))
     
-    # 3. Hitung X baru: X_new = L * Y_new
+    # Hitung X baru
     X_new = L.dot(Y_new)
     
     return X_new, Y_new
