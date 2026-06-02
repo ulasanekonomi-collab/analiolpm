@@ -28,10 +28,10 @@ file_p = st.sidebar.file_uploader("2. Input Primer (P)", type=["csv"])
 file_y = st.sidebar.file_uploader("3. Permintaan Akhir (Y)", type=["csv"])
 
 st.sidebar.markdown("---")
-st.sidebar.image("logounisba.png", width=150) # Pastikan file logo ada
+st.sidebar.image("logounisba.png", width=75) # Pastikan file logo ada
 st.sidebar.markdown("**Dikembangkan oleh:**")
 st.sidebar.markdown("Yuhka Sundaya")
-st.sidebar.markdown("*Ekonomi Pembangunan Unisba*")
+st.sidebar.markdown("Ekonomi Pembangunan Unisba")
 
 if file_z and file_p and file_y:
     try:
