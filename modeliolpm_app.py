@@ -96,7 +96,7 @@ if file_z and file_p and file_y:
                 })
                 
                 # --- TAMPILKAN HASIL SIMULASI ---
-                st.write("### 📈 Hasil Simulasi Perubahan Output ($\Delta X = L \\times \Delta Y$)")
+                st.write("### 📈 Hasil Simulasi Perubahan Output ($\Delta X = L' \\times \Delta Y$)")
                 st.write("Tabel di bawah ini menunjukkan seberapa besar output di setiap sektor harus berubah/bertambah untuk merespon perubahan permintaan akhir:")
                 
                 st.dataframe(df_sim_result.style.format("{:,.2f}").background_gradient(cmap="Blues", subset=["Perubahan Output"]))
