@@ -208,3 +208,40 @@ def calculate_round_by_round(A, delta_Y_dict, n_sektor, max_rounds=15, tolerance
             
     df_rounds = pd.DataFrame(round_data)
     return df_rounds
+
+def hitung_estimasi_waktu_io(matrix_A, matrix_L, delta_Y, tau, toleransi=0.95):
+    """
+    Engine untuk menghitung single value estimasi waktu berdasarkan konvergensi IO.
+    Menggunakan library numpy yang sudah di-import di bagian atas berkas.
+    """
+    # Hitung total dampak ideal sebagai target akhir (Invers Leontief)
+    total_dampak_ideal = matrix_L @ delta_Y
+    total_output_ideal = np.sum(total_dampak_ideal)
+    
+    # Guardrail jika tidak ada stimulus yang dimasukkan user
+    if total_output_ideal == 0:
+        return 0.0, 0
+    
+    dampak_akumulasi = np.zeros_like(delta_Y, dtype=float)
+    k = 0
+    max_iterasi = 50 # Batas aman pembatas loop
+    
+    # Looping mencari putaran konvergensi (k) berdasarkan literatur
+    while k < max_iterasi:
+        # Rumus putaran dampak: A^k dikali delta_Y
+        dampak_round_ini = np.linalg.matrix_power(matrix_A, k) @ delta_Y
+        dampak_akumulasi += dampak_round_ini
+        
+        # Hitung rasio penyerapan saat ini terhadap target ideal
+        rasio_penyerapan = np.sum(dampak_akumulasi) / total_output_ideal
+        
+        # Hentikan loop jika sudah memenuhi target konvergensi (misal 95%)
+        if rasio_penyerapan >= toleransi:
+            break
+            
+        k += 1
+        
+    # Rumus Justifikasi Waktu Kalender: t = k * tau
+    estimasi_waktu = k * tau
+    
+    return float(estimasi_waktu), int(k)
