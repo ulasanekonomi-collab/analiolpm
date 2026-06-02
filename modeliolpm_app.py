@@ -91,15 +91,15 @@ if file_z and file_p and file_y:
                 dx_series = pd.Series(delta_X, index=sektor_names)
                 
                 df_sim_result = pd.DataFrame({
-                    "Perubahan Permintaan ($\Delta Y$)": dy_series,
-                    "Dampak Output ($\Delta X$)": dx_series
+                    "Perubahan Permintaan": dy_series,
+                    "Perubahan Output": dx_series
                 })
                 
                 # --- TAMPILKAN HASIL SIMULASI ---
                 st.write("### 📈 Hasil Simulasi Perubahan Output ($\Delta X = L \\times \Delta Y$)")
                 st.write("Tabel di bawah ini menunjukkan seberapa besar output di setiap sektor harus berubah/bertambah untuk merespon perubahan permintaan akhir:")
                 
-                st.dataframe(df_sim_result.style.format("{:,.2f}").background_gradient(cmap="Blues", subset=["Dampak Output ($\Delta X$)"]))
+                st.dataframe(df_sim_result.style.format("{:,.2f}").background_gradient(cmap="Blues", subset=["Perubahan Output"]))
                 
                 # Tombol Download Hasil Simulasi dalam Excel
                 excel_sim = convert_df_to_excel(df_sim_result)
