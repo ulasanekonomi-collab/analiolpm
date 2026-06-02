@@ -166,3 +166,45 @@ def calculate_output_change(L, delta_Y_dict, n_sektor):
     delta_X = L.dot(delta_Y).flatten()
     
     return delta_X, delta_Y
+    
+def calculate_round_by_round(A, delta_Y_dict, n_sektor, max_rounds=15, tolerance=0.001):
+    """
+    Simulasi pemenuhan permintaan akhir menggunakan pendekatan Round-by-Round.
+    Rumus: Delta X = (I + A + A^2 + A^3 + ...) * Delta Y
+    """
+    import numpy as np
+    import pandas as pd
+    
+    # 1. Bangun vektor Delta Y dari dictionary
+    delta_Y = np.zeros(n_sektor)
+    for idx, value in delta_Y_dict.items():
+        if idx < n_sektor:
+            delta_Y[idx] = value
+            
+    # 2. Inisialisasi pelacakan tiap round
+    round_data = []
+    
+    # Round 0: Dampak Langsung (Initial Shock) -> Delta X_0 = Delta Y
+    current_shock = delta_Y.copy()
+    total_X = current_shock.copy()
+    round_data.append({"Round": 0, "Tambahan Output": current_shock.sum(), "Total Output Akumulasi": total_X.sum()})
+    
+    # 3. Iterasi putaran demi putaran (Round 1 sampai max_rounds)
+    for r in range(1, max_rounds + 1):
+        # Perubahan pada round ini: Delta X_r = A * Delta X_(r-1)
+        current_shock = A.dot(current_shock)
+        total_X += current_shock
+        
+        tambahan_nilai = current_shock.sum()
+        round_data.append({
+            "Round": r, 
+            "Tambahan Output": tambahan_nilai, 
+            "Total Output Akumulasi": total_X.sum()
+        })
+        
+        # Hentikan iterasi jika tambahan output sudah sangat kecil (konvergen)
+        if tambahan_nilai < tolerance:
+            break
+            
+    df_rounds = pd.DataFrame(round_data)
+    return df_rounds
