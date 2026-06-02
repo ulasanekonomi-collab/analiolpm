@@ -7,7 +7,7 @@ from modeliolpm_engine import (
     calculate_structural_coefficients, 
     calculate_leontief_inverse, 
     calculate_linkages,
-    simulate_demand_shock # Pastikan import ini ada
+    calculate_output_change  # <--- 
 )
 
 # Fungsi untuk konversi ke Excel
