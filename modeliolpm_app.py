@@ -7,7 +7,8 @@ from modeliolpm_engine import (
     calculate_structural_coefficients, 
     calculate_leontief_inverse, 
     calculate_linkages,
-    calculate_output_change  # <--- 
+    calculate_output_change,
+    calculate_round_by_round  # <--- Tambahkan import ini
 )
 
 # Fungsi untuk konversi ke Excel
@@ -113,7 +114,31 @@ if file_z and file_p and file_y:
                 # Visualisasi 10 Sektor dengan Dampak Output Terbesar
                 st.write("#### 📊 Top 10 Sektor dengan Dampak Perubahan Output Terbesar")
                 st.bar_chart(df_sim_result["Perubahan Output"].sort_values(ascending=False).head(10))
-
+            # --- E. TAMPILAN ROUND-BY-ROUND EFFECT ---
+            st.write("---")
+            st.write("### 🔁 Analisis Proses Konvergensi (Round-by-Round Effect)")
+            st.write("Secara teoritis, nilai **Perubahan Output** akhir dicapai melalui proses stimulasi berantai antar-sektor dari satu putaran transaksi ke putaran berikutnya hingga efeknya habis:")
+                
+            # Panggil fungsi round-by-round dari engine (membutuhkan matriks A yang sudah dihitung di atas)
+            df_rounds_result = calculate_round_by_round(A, delta_Y_dict, n_sektor)
+                
+            col_tabel, col_grafik = st.columns([1, 1])
+                
+            with col_tabel:
+                st.write("**Tabel Akumulasi Dampak per Putaran (Round):**")
+                st.dataframe(df_rounds_result.style.format({
+                    "Tambahan Output": "{:,.2f}",
+                    "Total Output Akumulasi": "{:,.2f}"
+                }))
+                    
+            with col_grafik:
+                st.write("**Grafik Peluruhan Efek (Menuju Konvergen):**")
+                # Menampilkan grafik garis bagaimana tambahan nilai menyusut menuju 0
+                st.line_chart(df_rounds_result.set_index("Round")["Tambahan Output"])
+                    
+                # Berikan catatan edukatif di bawahnya
+                total_iterasi = df_rounds_result["Round"].max()
+                st.info(f"💡 **Analisis Makro:** Efek kejutan stimulus ekonomi ini membutuhkan waktu sebanyak **{total_iterasi} putaran transaksi** di dalam pasar sampai dampaknya benar-benar terserap sepenuhnya dan mencapai titik keseimbangan baru.")
     except Exception as e:
         st.error(f"Terjadi kesalahan: {e}")
 else:
