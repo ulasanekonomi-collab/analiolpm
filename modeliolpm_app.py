@@ -112,7 +112,7 @@ if file_z and file_p and file_y:
                 
                 # Visualisasi 10 Sektor dengan Dampak Output Terbesar
                 st.write("#### 📊 Top 10 Sektor dengan Dampak Perubahan Output Terbesar")
-                st.bar_chart(df_sim_result["Dampak Output ($\Delta X$)"].sort_values(ascending=False).head(10))
+                st.bar_chart(df_sim_result["Perubahan Output"].sort_values(ascending=False).head(10))
 
     except Exception as e:
         st.error(f"Terjadi kesalahan: {e}")
