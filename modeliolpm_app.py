@@ -140,40 +140,41 @@ if file_z and file_p and file_y:
                 st.info(f"💡 **Analisis Makro:** Efek kejutan stimulus ekonomi ini membutuhkan waktu sebanyak **{total_iterasi} putaran transaksi** di dalam pasar sampai dampaknya benar-benar terserap sepenuhnya dan mencapai titik keseimbangan baru.")
             
             # =========================================================================
-            # ⏱️ PERBAIKAN UTAMA: ESTIMATOR JEDA WAKTU KEBIJAKAN (PAKAI DATA RIIL & STATE)
+            # ⏱️ PERBAIKAN TOTAL: ESTIMATOR JEDA WAKTU KEBIJAKAN (MENGGUNAKAN FORM)
             # =========================================================================
             st.write("---")
             st.title("⏱️ I-O Time-Lag Estimator")
             st.write("Visualisasi interaktif estimasi waktu penyerapan stimulus ekonomi berdasarkan struktur pasar nyata.")
 
-            # 1. UI Kontrol Parameter di Sidebar
-            st.sidebar.markdown("---")
-            st.sidebar.header("⚙️ Parameter Waktu Dinamis")
-            tau_input = st.sidebar.slider(
-                "Jeda Adaptasi Industri (𝜏)", 0.5, 3.0, 1.0, 0.5, 
-                help="Rata-rata waktu (bulan) yang dibutuhkan industri untuk merespons pesanan baru."
-            )
-            toleransi_input = st.sidebar.slider("Target Penyerapan Dampak (%)", 80, 99, 95, 1) / 100.0
+            # Kita buat wadah Form khusus untuk perhitungan waktu
+            with st.form(key="form_time_lag"):
+                st.subheader("⚙️ Atur Parameter Waktu Dinamis")
+                
+                # Slider ditaruh di dalam halaman utama form agar lebih fokus
+                tau_input = st.slider(
+                    "Jeda Adaptasi Industri (𝜏)", 0.5, 3.0, 1.0, 0.5, 
+                    help="Rata-rata waktu (bulan) yang dibutuhkan industri untuk merespons pesanan baru."
+                )
+                
+                toleransi_input = st.slider(
+                    "Target Penyerapan Dampak (%)", 80, 99, 95, 1,
+                    help="Ambang batas persentase dampak ideal Leontief yang ingin diserap pasar."
+                ) / 100.0
+                
+                # Tombol submit khusus di dalam form
+                submit_hitung = st.form_submit_button(label="🚀 Hitung Estimasi Waktu Efek")
 
-            # 2. Inisialisasi Session State agar Hasil Tidak Menghilang Saat Rerun
-            if "waktu_hitung_selesai" not in st.session_state:
-                st.session_state.waktu_hitung_selesai = False
-                st.session_state.sim_waktu_hasil = 0.0
-                st.session_state.sim_round_hasil = 0
+            # Blok ini akan dieksekusi begitu tombol di dalam form diklik
+            if submit_hitung:
+                # Membangun Vektor Delta Y Riil Sesuai Hasil Pilihan Sektor User
+                import numpy as np
+                delta_Y_vector = np.zeros(n_sektor)
+                for idx, value in delta_Y_dict.items():
+                    delta_Y_vector[idx] = value
 
-            # 3. Membangun Vektor Delta Y Riil Sesuai Hasil Pilihan Sektor User
-            # Kita buat array numpy berisi nol sepanjang n_sektor, lalu isi dari delta_Y_dict
-            import numpy as np
-            delta_Y_vector = np.zeros(n_sektor)
-            for idx, value in delta_Y_dict.items():
-                delta_Y_vector[idx] = value
-
-            # 4. Tombol Eksekusi Perhitungan Waktu
-            if st.button("🚀 Hitung Estimasi Waktu Efek"):
-                # Pastikan nama fungsi di bawah ini sesuai dengan yang sudah dimasukkan ke engine.py Anda
+                # Panggil fungsi hitung dari engine
                 from modeliolpm_engine import hitung_estimasi_waktu_io
                 
-                # Memanggil hitungan dari engine menggunakan data matriks riil (A, L, dan delta_Y_vector)
                 estimasi_waktu, total_round = hitung_estimasi_waktu_io(
                     matrix_A=A, 
                     matrix_L=L, 
@@ -182,25 +183,15 @@ if file_z and file_p and file_y:
                     toleransi=toleransi_input
                 )
                 
-                # Simpan hasil hitungan murni ke dalam memori jangka pendek Streamlit
-                st.session_state.sim_waktu_hasil = float(estimasi_waktu)
-                st.session_state.sim_round_hasil = int(total_round)
-                st.session_state.waktu_hitung_selesai = True
-
-            # 5. Blok Visualisasi Hasil Utama (Akan terkunci di layar)
-            if st.session_state.waktu_hitung_selesai:
+                # --- TAMPILKAN HASIL UTAMA (AMAN DARI RE-RUN) ---
                 st.markdown("---")
                 st.markdown("<h3 style='text-align: center;'>Estimasi Waktu Penyerapan Penuh</h3>", unsafe_allow_html=True)
                 
-                # Ambil nilai murni dari session state
-                waktu_display = st.session_state.sim_waktu_hasil
-                round_display = st.session_state.sim_round_hasil
-                
-                st.markdown(f"<h1 style='text-align: center; color: #FF4B4B; font-size: 75px;'>{waktu_display:.1f} Bulan</h1>", unsafe_allow_html=True)
-                st.markdown(f"<p style='text-align: center; color: gray;'>Kebijakan investasi membutuhkan waktu sekitar <b>{waktu_display:.1f} bulan</b> untuk mentransmisikan dampak multipliernya melalui {round_display} putaran penyesuaian pasar.</p>", unsafe_allow_html=True)
+                st.markdown(f"<h1 style='text-align: center; color: #FF4B4B; font-size: 75px;'>{estimasi_waktu:.1f} Bulan</h1>", unsafe_allow_html=True)
+                st.markdown(f"<p style='text-align: center; color: gray;'>Kebijakan investasi membutuhkan waktu sekitar <b>{estimasi_waktu:.1f} bulan</b> untuk mentransmisikan dampak multipliernya melalui {total_round} putaran penyesuaian pasar.</p>", unsafe_allow_html=True)
                 st.markdown("---")
                 
-                # 6. Pusat Informasi Relevan (Basis Teori & Justifikasi Jurnal)
+                # Pusat Informasi Relevan (Basis Teori & Justifikasi Jurnal)
                 with st.expander("🔍 Lihat Justifikasi Ilmiah & Basis Rumus (Bahan Laporan)"):
                     st.markdown(f"""
                     ### Formula yang Digunakan:
@@ -208,15 +199,15 @@ if file_z and file_p and file_y:
                     $$t = k \\times \\tau$$
                     
                     Dimana:
-                    * **$t$ (Estimasi Waktu):** **{waktu_display:.1f} Bulan**
-                    * **$k$ (Putaran Rantai Pasok):** Ditentukan otomatis oleh komputer sebanyak **{round_display} putaran** hingga dampak kumulatif meluruh dan menyerap **{toleransi_input*100:.0f}%** dari target ideal Invers Leontief.
+                    * **$t$ (Estimasi Waktu):** **{estimasi_waktu:.1f} Bulan**
+                    * **$k$ (Putaran Rantai Pasok):** Ditentukan otomatis oleh komputer sebanyak **{total_round} putaran** hingga dampak kumulatif meluruh dan menyerap **{toleransi_input*100:.0f}%** dari target ideal Invers Leontief.
                     * **$\\tau$ (Jeda Adaptasi):** Parameter input yang Anda tentukan sebesar **{tau_input} bulan** per siklus transaksi.
                     
                     ### Korelasi Teoritis dengan Literatur Akademis:
                     * **Dekomposisi Putaran ($k$):** Mengikuti kritik *Kolokontes et al. (2019)*, efek pengganda ekonomi tidak terjadi instan, melainkan menjalar dari dampak langsung (*Direct Effect*) hingga berantai (*Indirect Effects*).
                     * **Justifikasi Batas Konvergensi:** Studi komparatif Leontief-Ghosh oleh *Guerra & Sancho (2010)* membuktikan deret putaran pasti akan mengerem (konvergen) karena adanya kebocoran berupa komponen nilai tambah (*Value-Added*).
-                    * **Justifikasi Waktu Berjalan ($\\tau$):** Pemodelan struktural modern oleh *Pettena & Raberto (2025)* memvalidasi adanya jeda waktu operasional (*time lag*) di dunia nyata bagi korporasi untuk melakukan penyesuaian kapasitas produksi saat terjadi gubahan permintaan.
-                    """)    
+                    * **Justifikasi Waktu Berjalan ($\\tau$):** Pemodelan struktural modern oleh *Pettena & Raberto (2025)* memvalidasi adanya jeda waktu operasional (*time lag*) di dunia nyata bagi korporasi untuk melakukan penyesuaian kapasitas produksi saat terjadi perubahan permintaan.
+                    """)
     except Exception as e:
         st.error(f"Terjadi kesalahan: {e}")
 else:
