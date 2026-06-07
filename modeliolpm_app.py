@@ -19,8 +19,8 @@ def convert_df_to_excel(df):
         df.to_excel(writer, index=True, sheet_name='Hasil Analisis')
     return output.getvalue()
 
-st.set_page_config(page_title="Model IOLPM", layout="wide")
-st.title("📊 MODEL IOLPM: Konstruksi Data & Analisis")
+st.set_page_config(page_title="Model IOL", layout="wide")
+st.title("📊 MODEL INPUT-OUPUT")
 
 # --- SIDEBAR ---
 st.sidebar.header("📁 Unggah Data")
